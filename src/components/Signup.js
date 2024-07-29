@@ -20,7 +20,7 @@ const Signup = () => {
       <div className="container-fluid h-custom">
         <div className="row d-flex justify-content-center align-items-center h100">
           <div className="col-md-9 col-lg-6 col-xl-5">
-            <img src="./image.png" className="img-fluid" />
+            <img src="Image.png" className="img-fluid" />
           </div>
           <div className="col-md-8 col-lg-6 col-xl-4 offset-xl-1">
             <form onSubmit={handleSignup}>
