@@ -1,38 +1,55 @@
-// Components/News.js
-
-import { React, useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import NewsItem from "./NewsItem";
 import InfiniteScroll from "react-infinite-scroll-component";
 import Navbar1 from "./Navbar1";
 import Navbar2 from "./Navbar2";
 
 function News(props) {
-  let category = props.category;
-  let [articles, setArticles] = useState([]);
-  let [totalResults, setTotalResults] = useState(0);
-  let [page, setPage] = useState(1);
+  const { category } = props;
+  const [articles, setArticles] = useState([]);
+  const [totalResults, setTotalResults] = useState(0);
+  const [page, setPage] = useState(1);
 
-  let resultNews = async () => {
-    const url = `https://newsapi.org/v2/top-headlines?country=in&category=${category}&page=${page}&apiKey=0f3c08aa9206454ba355a31f7c526a60`;
-    let data = await fetch(url);
-    let parsedData = await data.json();
-    setArticles(parsedData.articles);
-    setTotalResults(parsedData.totalResults);
+  const resultNews = async () => {
+    try {
+      const url = `https://newsapi.org/v2/top-headlines?country=in&category=${category}&page=${page}&apiKey=0f3c08aa9206454ba355a31f7c526a60`;
+      const response = await fetch(url);
+      const parsedData = await response.json();
+      if (parsedData.articles) {
+        setArticles(parsedData.articles);
+        setTotalResults(parsedData.totalResults);
+      } else {
+        console.error("No articles found in the API response");
+      }
+    } catch (error) {
+      console.error("Error fetching news:", error);
+    }
   };
 
   useEffect(() => {
     resultNews();
-  }, []);
+  }, [category]);
 
-  let fetchData = async () => {
-    const url = `https://newsapi.org/v2/top-headlines?country=in&category=${category}&page=${
-      page + 1
-    }&apiKey=0f3c08aa9206454ba355a31f7c526a60`;
-    setPage(page + 1);
+  const fetchData = async () => {
+    try {
+      const url = `https://newsapi.org/v2/top-headlines?country=in&category=${category}&page=${
+        page + 1
+      }&apiKey=0f3c08aa9206454ba355a31f7c526a60`;
+      setPage((prevPage) => prevPage + 1);
 
-    let data = await fetch(url);
-    let parsedData = await data.json();
-    setArticles(articles.concat(parsedData.articles));
+      const response = await fetch(url);
+      const parsedData = await response.json();
+      if (parsedData.articles) {
+        setArticles((prevArticles) => [
+          ...prevArticles,
+          ...parsedData.articles,
+        ]);
+      } else {
+        console.error("No articles found in the API response");
+      }
+    } catch (error) {
+      console.error("Error fetching more news:", error);
+    }
   };
 
   return (
@@ -52,27 +69,26 @@ function News(props) {
         }
       >
         <div className="container">
-          <div className="row ">
-            {articles.map((element) => {
-              return (
-                <div className="col-lg-4 my-3 w-30 " key={element.url}>
+          <div className="row">
+            {articles && articles.length > 0 ? (
+              articles.map((element) => (
+                <div className="col-lg-4 my-3 w-30" key={element.url}>
                   <NewsItem
                     className="h-100"
                     sourceName={element.source.name}
                     title={element.title}
                     desc={
-                      element.description
-                        ? element.description
-                        : "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Nemo amet tempore, molestiae aliquam laboriosam nostrum! Incidunt unde corporis molestias velit?"
+                      element.description ||
+                      "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Nemo amet tempore, molestiae aliquam laboriosam nostrum! Incidunt unde corporis molestias velit?"
                     }
-                    imageURL={
-                      element.urlToImage ? element.urlToImage : "./news.jpg"
-                    }
+                    imageURL={element.urlToImage || "./news.jpg"}
                     newsUrl={element.url}
                   />
                 </div>
-              );
-            })}
+              ))
+            ) : (
+              <p>Loading articles...</p>
+            )}
           </div>
         </div>
       </InfiniteScroll>
